@@ -105,7 +105,6 @@ module TDiary
 						#'Location' => $!.path
 						'Content-Type' => 'text/html',
 					}
-					head['cookie'] = tdiary.cookies if tdiary && tdiary.cookies.size > 0
 					body = %Q[
 								<html>
 								<head>
@@ -114,6 +113,7 @@ module TDiary
 								</head>
 								<body>Wait or <a href="#{$!.path}">Click here!</a></body>
 								</html>]
+					head['cookie'] = tdiary.cookies if tdiary && tdiary.cookies.size > 0
 					# TODO return code should be 302? (current behaviour returns 200)
 					TDiary::Response.new( body, 200, head )
 				end
@@ -190,7 +190,6 @@ module TDiary
 						#'Location' => $!.path
 						'Content-Type' => 'text/html',
 					}
-					head['cookie'] = tdiary.cookies if tdiary.cookies.size > 0
 					body = %Q[
 								<html>
 								<head>
@@ -199,6 +198,7 @@ module TDiary
 								</head>
 								<body>Wait or <a href="#{$!.path}">Click here!</a></body>
 								</html>]
+					head['cookie'] = tdiary.cookies if tdiary.cookies.size > 0
 					# TODO return code should be 302? (current behaviour returns 200)
 					TDiary::Response.new( body, 200, head )
 				end
