@@ -28,16 +28,6 @@ module TDiary
 		end
 
 		private
-		def fake_stdin_as_params
-			stdin_spy = StringIO.new( "" )
-			# FIXME dirty hack
-			if $RACK_ENV && $RACK_ENV['rack.input']
-				stdin_spy.print( $RACK_ENV['rack.input'].read )
-				stdin_spy.rewind
-			end
-			$stdin = stdin_spy
-		end
-
 		def adopt_rack_request_to_plain_old_tdiary_style( env )
 			req = TDiary::Request.new( env )
 			$RACK_ENV = req.env
@@ -49,6 +39,16 @@ module TDiary
 		def dispatch_request( request )
 			dispatcher = TDiary::Dispatcher.__send__( @target )
 			dispatcher.dispatch_cgi( request )
+		end
+
+		def fake_stdin_as_params
+			stdin_spy = StringIO.new( "" )
+			# FIXME dirty hack
+			if $RACK_ENV && $RACK_ENV['rack.input']
+				stdin_spy.print( $RACK_ENV['rack.input'].read )
+				stdin_spy.rewind
+			end
+			$stdin = stdin_spy
 		end
 	end
 end
