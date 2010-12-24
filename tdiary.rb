@@ -464,8 +464,9 @@ module TDiary
 	#  configuration class
 	#
 	class Config
-		def initialize(cgi)
+		def initialize( cgi, request = nil )
 			@cgi = cgi
+			@request = request
 			load
 
 			instance_variables.each do |v|
