@@ -41,7 +41,7 @@ module TDiary
 
 			attr_reader :request, :cgi, :conf, :tdiary, :params
 
-			def initialize(request, cgi)
+			def initialize( request, cgi )
 				@request = request
 				@cgi = cgi
 				@conf = TDiary::Config::new( cgi, request )
