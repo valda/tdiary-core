@@ -468,23 +468,8 @@ module TDiary
 			@cgi = cgi
 			@request = request
 			load
-
-			instance_variables.each do |v|
-				v = v.to_s.sub( /@/, '' )
-				instance_eval( <<-SRC
-					def #{v}
-						@#{v}
-					end
-					def #{v}=(p)
-						@#{v} = p
-					end
-					SRC
-				)
-			end
-
-			bot = ["bot", "spider", "antenna", "crawler", "moget", "slurp"]
-			bot += @options['bot'] || []
-			@bot = Regexp::new( "(#{bot.uniq.join( '|' )})", true )
+			setup_attr_accessor_to_all_ivars
+			configure_bot_pattern
 		end
 
 		# saving to tdiary.conf in @data_path
@@ -691,6 +676,27 @@ module TDiary
 			else
 				"tdiary.conf"
 			end
+		end
+
+		def setup_attr_accessor_to_all_ivars
+			instance_variables.each do |v|
+				v = v.to_s.sub( /@/, '' )
+				instance_eval( <<-SRC
+					def #{v}
+						@#{v}
+					end
+					def #{v}=(p)
+						@#{v} = p
+					end
+					SRC
+				)
+			end
+		end
+
+		def configure_bot_pattern
+			bot = ["bot", "spider", "antenna", "crawler", "moget", "slurp"]
+			bot += @options['bot'] || []
+			@bot = Regexp::new( "(#{bot.uniq.join( '|' )})", true )
 		end
 
 		def method_missing( *m )
