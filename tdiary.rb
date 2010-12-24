@@ -465,11 +465,10 @@ module TDiary
 	#
 	class Config
 		def initialize( cgi, request = nil )
-			@cgi = cgi
-			@request = request
-			load
-			setup_attr_accessor_to_all_ivars
+			@cgi, @request = cgi, request
+			configure_attrs
 			configure_bot_pattern
+			setup_attr_accessor_to_all_ivars
 		end
 
 		# saving to tdiary.conf in @data_path
@@ -540,7 +539,7 @@ module TDiary
 
 	private
 		# loading tdiary.conf in current directory
-		def load
+		def configure_attrs
 			@secure = true unless @secure
 			@options = {}
 			load_tdiary_config
@@ -679,8 +678,8 @@ module TDiary
 		end
 
 		def setup_attr_accessor_to_all_ivars
-			instance_variables.each do |v|
-				v = v.to_s.sub( /@/, '' )
+			instance_variables.each do |ivar_sym|
+				v = ivar_sym.to_s.sub( /@/, '' )
 				instance_eval( <<-SRC
 					def #{v}
 						@#{v}
