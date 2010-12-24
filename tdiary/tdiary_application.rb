@@ -30,6 +30,7 @@ module TDiary
 		private
 		def adopt_rack_request_to_plain_old_tdiary_style( env )
 			req = TDiary::Request.new( env )
+			req.params # fill params to tdiary_request
 			$RACK_ENV = req.env
 			env["rack.input"].rewind
 			fake_stdin_as_params
