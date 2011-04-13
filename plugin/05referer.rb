@@ -207,6 +207,7 @@ def referer_save_current( diary, referer )
 
 	# checking only volatile list
 	ref = CGI::unescape( referer.sub( /#.*$/, '' ).sub( /\?\d{8}$/, '' ) )
+	ref = @conf.to_native( ref )
 	@conf.only_volatile.each do |volatile|
 		return if /#{volatile}/i =~ ref
 	end
