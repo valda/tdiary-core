@@ -10,13 +10,19 @@ module TDiary
 			# stolen from Rack::Handler::CGI.send_headers
 			def send_headers( status, headers )
 				$stdout.print "Status: #{status}\r\n"
-				$stdout.print CGI.new.header( headers )
+				begin
+					$stdout.print CGI.new.header( headers )
+				rescue EOFError
+					charset = headers.delete( 'charset' )
+					headers['Content-Type'] += "; charset=#{charset}" if charset
+					$stdout.print headers.map{|k,v| "#{k}: #{v}\r\n"}.join << "\r\n"
+				end
 				$stdout.flush
 			end
 
 			# stolen from Rack::Handler::CGI.send_body
 			def send_body( body )
-				body.each { |part|
+				body.lines.each { |part|
 					$stdout.print part
 					$stdout.flush
 				}
@@ -40,11 +46,6 @@ module TDiary
 					conf = TDiary::Config::new(@cgi)
 					tdiary = nil
 					status = nil
-
-					if %r[/\d{4,8}(-\d+)?\.html?$] =~ @cgi.redirect_url and not @cgi.valid?( 'date' ) then
-						@cgi.params['date'] = [@cgi.redirect_url.sub( /.*\/(\d+)(-\d+)?\.html$/, '\1\2' )]
-						status = CGI::HTTP_STATUS['OK']
-					end
 
 					begin
 						if @cgi.valid?( 'comment' ) then

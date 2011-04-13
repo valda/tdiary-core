@@ -1,6 +1,6 @@
-# -*- coding: utf-8; -*-
+# -*- coding: utf-8 -*-
 #
-# 00default.rb: default plugins 
+# 00default.rb: default plugins
 #
 # Copyright (C) 2010, TADA Tadashi <t@tdtds.jp>
 # You can redistribute it and/or modify it under GPL2.
@@ -249,6 +249,8 @@ def calc_links
 		days.sort!
 		days.unshift(nil).push(nil)
 		@navi_user_days = days[days.index(today) - 1, 3]
+		@prev_day = @navi_user_days[0]
+		@next_day = @navi_user_days[2]
 	elsif @mode == 'nyear'
 		y = 2000 # specify leam year
 		m, d = @cgi.params['date'][0].scan(/^(\d\d)(\d\d)$/)[0]
@@ -349,20 +351,8 @@ def description_tag
 	end
 end
 
-def require_jquery
-	@require_jquery = true
-end
-
-if /^(form|edit|preview|showcomment|conf|saveconf)$/ =~ @mode then
-	require_jquery
-end
-
 def jquery_tag
-	if @require_jquery then
-		%Q[<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.js" type="text/javascript"></script>\n\t<script src="js/00default.js" type="text/javascript"></script>]
-	else
-		''
-	end
+	%Q[<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.js" type="text/javascript"></script>\n\t<script src="js/00default.js" type="text/javascript"></script>]
 end
 
 def theme_url; 'theme'; end

@@ -3,26 +3,25 @@
 == NAME
 tDiary: the "tsukkomi-able" web diary system.
 
-Copyright (C) 2001-2010, TADA Tadashi <t@tdtds.jp>
+Copyright (C) 2001-2011, TADA Tadashi <t@tdtds.jp>
 You can redistribute it and/or modify it under GPL2.
 =end
 
-TDIARY_VERSION = '3.0.1.20110103'
+TDIARY_VERSION = '3.0.1.20110411'
 
-$:.insert( 1, File::dirname( __FILE__ ).untaint + '/misc/lib' )
-
-Dir.glob(File::dirname( __FILE__ ).untaint + '/vendor/*/lib') do |dir|
-	$:.insert( 1, dir )
-end
+$:.unshift File.join(File::dirname(__FILE__), '/misc/lib').untaint
+Dir["#{File::dirname(__FILE__) + '/vendor/*/lib'}"].each {|dir| $:.unshift dir.untaint }
 
 require 'cgi'
 require 'uri'
+require 'logger'
+require 'pstore'
 begin
 	require 'erb_fast'
 rescue LoadError
 	require 'erb'
 end
-require 'compatible'
+require 'tdiary/compatible'
 
 =begin
 == String class
@@ -53,11 +52,7 @@ enhanced CGI class
 =end
 class CGI
 	def valid?( param, idx = 0 )
-		begin
-			self.params[param] and self.params[param][idx] and self.params[param][idx].length > 0
-		rescue NameError # for Tempfile class of ruby 1.6
-			self.params[param][idx].stat.size > 0
-		end
+		self.params[param] and self.params[param][idx] and self.params[param][idx].length > 0
 	end
 
 	def mobile_agent?
@@ -497,7 +492,7 @@ module TDiary
 		def save
 			result = ERB::new( File::open( "#{PATH}/skel/tdiary.rconf" ){|f| f.read }.untaint ).result( binding )
 			result.untaint unless @secure
-			Safe::safe( @secure ? 4 : TDIARY_SAFE_NORMAL ) do
+			Safe::safe( @secure ? 4 : 1 ) do
 				eval( result, binding, "(TDiary::Config#save)", 1 )
 			end
 			File::open( "#{@data_path}tdiary.conf", 'w' ) do |o|
@@ -564,7 +559,7 @@ module TDiary
 		def load
 			@secure = true unless @secure
 			@options = {}
-			load_tdiary_config
+			eval( File::open( "tdiary.conf" ) {|f| f.read }.untaint, b, "(tdiary.conf)", 1 )
 
 			# language setup
 			@lang = 'ja' unless @lang
@@ -659,7 +654,7 @@ module TDiary
 
 				b = binding.taint
 				eval( def_vars1, b )
-				Safe::safe( @secure ? 4 : TDIARY_SAFE_NORMAL ) do
+				Safe::safe( @secure ? 4 : 1 ) do
 					begin
 						eval( cgi_conf, b, "(TDiary::Config#load_cgi_conf)", 1 )
 					rescue SyntaxError
@@ -681,23 +676,6 @@ module TDiary
 		end
 
 		private
-		def load_tdiary_config
-			eval( File::open( tdiary_config_file_path ) {
-					|f| f.read }.untaint, b, "(#{tdiary_config_file_path})", 1 )
-		end
-
-		def tdiary_config_file_path
-			return @tdiary_config_file_path if @tdiary_config_file_path
-			@tdiary_config_file_path = default_tdiary_conf_path
-		end
-
-		def default_tdiary_conf_path
-			if defined?( ::Rack )
-				"tdiary.conf.rack"
-			else
-				"tdiary.conf"
-			end
-		end
 
 		def method_missing( *m )
 			if m.length == 1 then
@@ -733,6 +711,7 @@ module TDiary
 			@body_leave_procs = []
 			@section_index = {}
 			@section_enter_procs = []
+			@comment_leave_procs = []
 			@subtitle_procs = []
 			@section_leave_procs = []
 			@edit_procs = []
@@ -758,13 +737,6 @@ module TDiary
 			@date_format = @conf.date_format
 			@referer_table = @conf.referer_table
 			@options = @conf.options
-
-			# for ruby 1.6.x support
-			if @conf.secure then
-				@cgi.params.each_value do |p|
-					p.each {|v| v.taint}
-				end
-			end
 
 			# loading plugins
 			@plugin_files = []
@@ -806,9 +778,10 @@ module TDiary
 			@body_leave_procs.taint
 			@section_index.taint
 			@section_enter_procs.taint
+			@comment_leave_procs.taint
 			@subtitle_procs.taint
 			@section_leave_procs.taint
-			return Safe::safe( secure ? 4 : TDIARY_SAFE_NORMAL ) do
+			return Safe::safe( secure ? 4 : 1 ) do
 				eval( src, binding, "(TDiary::Plugin#eval_src)", 1 )
 			end
 		end
@@ -920,6 +893,18 @@ module TDiary
 			r.join
 		end
 
+		def add_comment_leave_proc( block = Proc::new )
+			@comment_leave_procs << block
+		end
+
+		def comment_leave_proc( date )
+			r = []
+			@comment_leave_procs.each do |proc|
+				r << proc.call( date )
+			end
+			r.join
+		end
+
 		def add_edit_proc( block = Proc::new )
 			@edit_procs << block
 		end
@@ -1013,7 +998,7 @@ module TDiary
 			r = str.dup
 			if @options['apply_plugin'] and str.index( '<%' ) then
 				r = str.untaint if $SAFE < 3
-				Safe::safe( @conf.secure ? 4 : TDIARY_SAFE_NORMAL ) do
+				Safe::safe( @conf.secure ? 4 : 1 ) do
 					begin
 						r = ERB::new( r ).result( binding )
 					rescue Exception
@@ -1196,7 +1181,7 @@ module TDiary
 		end
 
 		def cache_path
-			@conf.cache_path || "#{@conf.data_path}cache"
+			(@conf.cache_path || "#{@conf.data_path}cache").untaint
 		end
 
 		def cache_file( prefix )
@@ -1231,7 +1216,6 @@ module TDiary
 		def parser_cache( date, key = nil, obj = nil )
 			return nil if @ignore_parser_cache
 
-			require 'pstore'
 			unless FileTest::directory?( cache_path ) then
 				begin
 					Dir::mkdir( cache_path )
@@ -1312,28 +1296,11 @@ module TDiary
 		def load_logger
 			return if @logger
 
-			require 'fileutils'
-			require 'logger'
+			log_path = (@conf.log_path || "#{@conf.data_path}log").untaint
+			Dir::mkdir( log_path ) unless FileTest::directory?( log_path )
 
-			# create log directory
-			log_path = @conf.options['log_path'] || "#{@conf.data_path}/log/"
-			FileUtils::mkdir_p( log_path ) unless FileTest::directory?( log_path ) 
-
-			log_file = log_path + "debug.log"
-			@logger = Logger::new( log_file, 'daily' )
-
-			case @conf.options['log_level']
-			when "FATAL"
-				@logger.level = Logger::FATAL
-			when "ERROR"
-				@logger.level = Logger::ERROR
-			when "WARN"
-				@logger.level = Logger::WARN
-			when "INFO"
-				@logger.level = Logger::INFO
-			else
-				@logger.level = Logger::DEBUG
-			end
+			@logger = Logger::new( File.join(log_path, "debug.log"), 'daily' )
+			@logger.level = Logger.const_get( @conf.log_level || 'DEBUG' )
 		end
 	end
 
@@ -2156,122 +2123,6 @@ EOS
 		def initialize(cgi, rhtml, conf)
 			super
 			@last_modified = Time.now
-		end
-	end
-
-	#
-	# exception class for TrackBack
-	#
-	class TDiaryTrackBackError < StandardError
-	end
-
-	#
-	# class TDiaryTrackBackBase
-	#
-	class TDiaryTrackBackBase < TDiaryBase
-		public :mode
-		def initialize( cgi, rhtml, conf )
-			super
-			date = @cgi.request_uri.scan(%r!/(\d{4})(\d\d)(\d\d)!)[0]
-			if date
-				@date = Time::local(*date)
-			else
-				@date = Time::now
-			end
-			@cgi.params['date'] = [@date.strftime( '%Y%m%d' )]
-		end
-
-		def diary_url
-			@conf.base_url + @conf.index.sub(%r|^\./|, '') + @plugin.instance_eval(%Q|anchor "#{@date.strftime('%Y%m%d')}"|)
-		end
-
-		def self.success_response
-			<<HERE
-<?xml version="1.0" encoding="iso-8859-1"?>
-<response>
-<error>0</error>
-</response>
-HERE
-		end
-
-		def self.fail_response(reason)
-			<<HERE
-<?xml version="1.0" encoding="iso-8859-1"?>
-<response>
-<error>1</error>
-<message>#{CGI::escapeHTML reason}</message>
-</response>
-HERE
-		end
-	end
-
-	#
-	# class TDiaryTrackBackReceive
-	#  receive TrackBack ping and store as comment
-	#
-	class TDiaryTrackBackReceive < TDiaryTrackBackBase
-		def initialize( cgi, rhtml, conf )
-			super
-			@error = nil
-
-			charset = nil
-			if @cgi.content_type =~ /charset=([^\s;]*)/i then
-				charset = $1
-			end
-
-			url = @cgi.params['url'][0]
-			blog_name = @conf.to_native( @cgi.params['blog_name'][0] || '', charset )
-			title = @conf.to_native( @cgi.params['title'][0] || '', charset )
-			excerpt = @conf.to_native( @cgi.params['excerpt'][0] || '', charset )
-			if excerpt.length > 255
-				excerpt = @conf.shorten( excerpt, 252 )
-			end
-
-			body = [url, blog_name, title, excerpt].join("\n")
-			@cgi.params['name'] = ['TrackBack']
-			@cgi.params['body'] = [body]
-
-			@comment = Comment::new('TrackBack', '', body)
-			begin
-				@io.transaction( @date ) do |diaries|
-					@diaries = diaries
-					@diary = @diaries[@date.strftime('%Y%m%d')]
-					if @diary and comment_filter( @diary, @comment ) then
-						@diary.add_comment(@comment)
-						unless @comment.visible?
-							@error = 'Your TrackBack has been filtered (maybe).'
-						end
-						DIRTY_COMMENT
-					else
-						@error = 'Your TrackBack has been filtered.'
-						@comment = nil
-						DIRTY_NONE
-					end
-				end
-			rescue
-				@error = $!.message
-			end
-		end
-
-		def eval_rhtml( prefix = '' )
-			raise TDiaryTrackBackError.new(@error) if @error
-			load_plugins
-			@plugin.instance_eval { update_proc }
-			TDiaryTrackBackBase::success_response
-		end
-	end
-
-	#
-	# class TDiaryTrackBackShow
-	#  show TrackBacks
-	#
-	class TDiaryTrackBackShow < TDiaryTrackBackBase
-		def eval_rhtml( prefix = '' )
-			load_plugins
-			anchor_str = @plugin.instance_eval(%Q|anchor "#{@date.strftime('%Y%m%d')}"|)
-			url = "#{@conf.index}#{anchor_str}#t"
-			url[0, 0] = '../' if %r|^https?://|i !~ @conf.index
-			raise ForceRedirect::new( url )
 		end
 	end
 end
