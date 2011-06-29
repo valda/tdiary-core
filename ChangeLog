@@ -1,3 +1,72 @@
+2011-06-25  TADA Tadashi <t@tdtds.jp>
+	* plugin/image.rb, js/image.js: using jQuery to insert image tags. #54
+	* plugin/image.rb: fixed encoding error on ruby 1.9.
+	* skel/update.rhtml.zh: removed garbage tags.
+	* js/category.js: changed cursor when hover.
+
+2011-06-25  MATSUOKA Kohei <kohei@machu.jp>
+	* js/highlight.js: fixed XSS vulnerability. #59
+
+2011-06-21  TADA Tadashi <t@tdtds.jp>
+	* added vendor/imagesize.
+	* plugin/image.rb: using ImageSize class getting image type and size. #56
+
+2011-06-20  MATSUOKA Kohei <kohei@machu.jp>
+	* plugin/highlight.rb, js/highlight.js: rewrited on jQuery. #38, #53
+
+2011-06-20  TADA Tadashi <t@tdtds.jp>
+	* plugin/image.rb, js/image.rb: ported to jQuery. #54
+
+2011-06-18  TADA Tadashi <t@tdtds.jp>
+	* plugin/00default.rb: added query string to javascripts for disable browser cache.
+
+2011-06-16  TADA Tadashi <t@tdtds.jp>
+	* plugin/amazon.rb: preferences for using bit.ly. #47
+	* js/00default.js: set $tDiary.blogkit to false in default. #48
+
+2011-06-13  TADA Tadashi <t@tdtds.jp>
+	* plugin/js/disp_referrer.rb: maintained some search engines.
+
+2011-06-12  TADA Tadashi <t@tdtds.jp>
+	* js/00default.js, js/category.js: fixed: running on MSIE(8) or Firefox(4).
+
+2011-06-11  TADA Tadashi <t@tdtds.jp>
+	* plugin/category.rb, js/category.js: dropdown list style on edit support.
+	* plugin/00default.rb: sorted javascripts by file name.
+
+2011-06-06  TADA Tadashi <t@tdtds.jp>
+	* avoid duplicate loading of javascript files.
+	* plugin/category.rb, js/category.js: splitted js file and rewrited on jQuery.
+
+2011-06-06  OGAWA KenIchi <kenichi@ice.email.ne.jp>
+	* plugin/pre_wrap.rb: fixed error about invalid selector.
+
+2011-06-02  TADA Tadashi <t@tdtds.jp>
+	* replaced div elements into span for better HTML. #35
+	* inserted some ids into update form.
+
+2011-05-28  SHIBATA Hiroshi  <shibata.hiroshi@gmail.com>
+
+	* added tdiary/io, moved to DefaultIO, PStoreIO.
+	* added core_ext.rb, extract core extension in tdiary.rb
+	* extract IOBase class in tdiary.rb, added tdiary/io/base.rb.
+	* partision a tdiary.rb, now tdiary/config.rb, tdiary/plugin.rb.
+
+2011-05-20  TADA Tadashi <t@tdtds.jp>
+	* supported ruby 1.9 on list.rb.
+
+2011-05-17  TADA Tadashi <t@tdtds.jp>
+	* changed Plugin#add_js_setting to Array because old ruby's hash is not hold order.
+	* added description of using js.
+
+2011-05-17  TADA Tadashi <t@tdtds.jp>
+	* added Plugin#enable_js and Plugin#add_js_setting method for inserting javascripts.
+	* added $tDiary and $tDiary.plugin object into javascript.
+	* added amazon.js for using amzn.to shoten service. Close #32.
+
+2011-05-06  SHIBATA Hiroshi  <shibata.hiroshi@gmail.com>
+	* plugin/05referer.rb, misc/plugin/a.rb: bugfix, backword compatibility.
+
 2011-04-29  TADA Tadashi <t@tdtds.jp>
 	* Release 3.0.2.
 

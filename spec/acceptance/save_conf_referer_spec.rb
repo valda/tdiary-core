@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-require File.expand_path('../acceptance_helper', __FILE__)
+require 'acceptance_helper'
 
 feature 'リンク元設定の利用', :mechanize => true do
 	scenario 'リンク元の非表示設定' do
@@ -58,7 +58,10 @@ feature 'リンク元設定の利用', :mechanize => true do
 		click_link '追記'
 		click_link '設定'
 		click_link 'リンク元'
-		fill_in 'referer_table', :with => '^http://www\.example\.com/.* alice'
+		fill_in 'referer_table', :with => <<-REFERER
+^http://www\.example\.com/.* alice
+^http://www\.example\.net/.* bob
+REFERER
 
 		click_button('OK')
 		within('title') { page.should have_content('(設定完了)') }

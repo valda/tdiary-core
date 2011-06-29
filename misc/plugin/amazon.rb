@@ -32,6 +32,13 @@ require 'rexml/document'
   'ca' => 'http://honnomemo.appspot.com/rpaproxy/ca/',
 }
 
+if @conf['amazon.bitly'] and @conf['bitly.login'] and @conf['bitly.key'] then
+	enable_js( 'amazon.js' )
+	add_js_setting( '$tDiary.plugin.bitly' )
+	add_js_setting( '$tDiary.plugin.bitly.login', "'#{@conf['bitly.login']}'" )
+	add_js_setting( '$tDiary.plugin.bitly.apiKey', "'#{@conf['bitly.key']}'" )
+end
+
 def amazon_fetch( url, limit = 10 )
 	raise ArgumentError, 'HTTP redirect too deep' if limit == 0
 
@@ -157,17 +164,17 @@ def amazon_detail_html( item )
 
 	url = amazon_url( item )
 	html = <<-HTML
-	<a class="amazon-detail" href="#{url}"><div class="amazon-detail">
+	<a class="amazon-detail" href="#{url}"><span class="amazon-detail">
 		<img class="amazon-detail left" src="#{h image[:src]}"
 		height="#{h image[:height]}" width="#{h image[:width]}"
 		alt="">
-		<div class="amazon-detail-desc">
+		<span class="amazon-detail-desc">
 			<span class="amazon-title">#{h title}</span><br>
 			<span class="amazon-author">#{h author}</span><br>
 			<span class="amazon-label">#{h amazon_label( item )}</span><br>
 			<span class="amazon-price">#{h amazon_price( item )}</span>
-		</div><br style="clear: left">
-	</div></a>
+		</span><br style="clear: left">
+	</span></a>
 	HTML
 end
 
@@ -285,6 +292,7 @@ def amazon_conf_proc
 		unless @conf.secure and not @conf['amazon.secure-cgi'] then
 			@conf['amazon.imgsize'] = @cgi.params['amazon.imgsize'][0].to_i
 			@conf['amazon.hidename'] = (@cgi.params['amazon.hidename'][0] == 'true')
+			@conf['amazon.bitly'] = (@cgi.params['amazon.bitly'][0] == 'true')
 			unless @conf.secure then
 				@conf['amazon.nodefault'] = (@cgi.params['amazon.nodefault'][0] == 'true')
 				if @cgi.params['amazon.clearcache'][0] == 'true' then
@@ -314,6 +322,17 @@ def amazon_conf_proc
 				<option value="false"#{" selected" unless @conf['amazon.hidename']}>#{@amazon_label_show}</option>
 			</select></p>
 		HTML
+
+		if @options['bitly.login'] and @options['bitly.key'] then
+			result << <<-HTML
+				<h3>#{@amazon_label_bitly}</h3>
+				<p><select name="amazon.bitly">
+					<option value="true"#{" selected" if @conf['amazon.bitly']}>#{@amazon_label_bitly_enabled}</option>
+					<option value="false"#{" selected" unless @conf['amazon.bitly']}>#{@amazon_label_bitly_disabled}</option>
+				</select></p>
+			HTML
+		end
+
 		unless @conf.secure then
 			result << <<-HTML
 				<h3>#{@amazon_label_notfound}</h3>

@@ -215,6 +215,7 @@ add_header_proc do
 	#{icon_tag}
 	#{description_tag}
 	#{jquery_tag.chomp}
+	#{script_tag.chomp}
 	#{css_tag.chomp}
 	#{iphone_tag.chomp}
 	#{title_tag.chomp}
@@ -352,7 +353,27 @@ def description_tag
 end
 
 def jquery_tag
-	%Q[<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.js" type="text/javascript"></script>\n\t<script src="js/00default.js" type="text/javascript"></script>]
+	%Q[<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js" type="text/javascript"></script>]
+end
+
+enable_js( '00default.js' )
+add_js_setting( '$tDiary.style', "'#{@conf.style.downcase.sub( /\Ablog/, '' )}'" )
+
+def script_tag_query_string
+	"?#{TDIARY_VERSION}#{Time::now.strftime('%Y%m%d')}"
+end
+
+def script_tag
+	query = script_tag_query_string
+	html = @javascripts.sort.map {|script|
+		%Q|<script src="js/#{script}#{query}" type="text/javascript"></script>|
+	}.join( "\n\t" )
+	html << "\n" << <<-HEAD
+		<script type="text/javascript"><!--
+		#{@javascript_setting.map{|a| "#{a[0]} = #{a[1]};"}.join("\n\t\t")}
+		//-->
+		</script>
+	HEAD
 end
 
 def theme_url; 'theme'; end
