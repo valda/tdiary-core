@@ -1,3 +1,29 @@
+2011-07-29  TADA Tadashi <t@tdtds.jp>
+	* js/00default.js: fixed over escape in makePluginTag().
+	* Release 3.1.0.
+
+2011-07-28  TADA Tadashi <t@tdtds.jp>
+	* js/01conf.js: reloaded after savng when sp plugin only. #76
+
+2011-07-26  TADA Tadashi <t@tdtds.jp>
+	* plugin/00default.rb: added js_url method lile theme_url.
+	* misc/plugin/disp_referrer.rb: ignored encoding error (workaround). thanks arton. #74
+
+2011-07-22  TADA Tadashi <t@tdtds.jp>
+	* skel/header.rb, skel/footer.rb: added div.whole-content inside body.
+	* rename theme/default to theme/tdiary2.
+	* added new theme default for tDiary 3.1.
+
+2011-07-18  TADA Tadashi <t@tdtds.jp>
+	* plugin/00default.rb: replaced sub to lines.
+	* js/01conf.js: fixed: lost CR/LF in textarea.
+
+2011-07-06  TADA Tadashi <t@tdtds.jp>
+	* specified id attr for conf form element.
+
+2011-07-05  TADA Tadashi <t@tdtds.jp>
+	* saved preferences in ajax.
+
 2011-06-25  TADA Tadashi <t@tdtds.jp>
 	* plugin/image.rb, js/image.js: using jQuery to insert image tags. #54
 	* plugin/image.rb: fixed encoding error on ruby 1.9.

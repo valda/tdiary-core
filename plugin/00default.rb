@@ -363,10 +363,12 @@ def script_tag_query_string
 	"?#{TDIARY_VERSION}#{Time::now.strftime('%Y%m%d')}"
 end
 
+def js_url; 'js'; end
+
 def script_tag
 	query = script_tag_query_string
 	html = @javascripts.sort.map {|script|
-		%Q|<script src="js/#{script}#{query}" type="text/javascript"></script>|
+		%Q|<script src="#{js_url}/#{script}#{query}" type="text/javascript"></script>|
 	}.join( "\n\t" )
 	html << "\n" << <<-HEAD
 		<script type="text/javascript"><!--
@@ -752,6 +754,10 @@ def brl; '<br clear="left">';  end
 # preferences (saving methods)
 #
 
+if @mode =~ /conf|saveconf/
+	enable_js( '01conf.js' )
+end
+
 # basic (default)
 def saveconf_default
 	if @mode == 'saveconf' then
@@ -771,8 +777,8 @@ end
 # header/footer (header)
 def saveconf_header
 	if @mode == 'saveconf' then
-		@conf.header = @conf.to_native( @cgi.params['header'][0] ).gsub( /\r\n/, "\n" ).gsub( /\r/, '' ).sub( /\n+\z/, '' )
-		@conf.footer = @conf.to_native( @cgi.params['footer'][0] ).gsub( /\r\n/, "\n" ).gsub( /\r/, '' ).sub( /\n+\z/, '' )
+		@conf.header = @conf.to_native( @cgi.params['header'][0] ).lines.map{|s| s.chomp}.join( "\n" ).sub( /\n+\z/, '' )
+		@conf.footer = @conf.to_native( @cgi.params['footer'][0] ).lines.map{|s| s.chomp}.join( "\n" ).sub( /\n+\z/, '' )
 	end
 end
 
