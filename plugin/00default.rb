@@ -507,7 +507,7 @@ def subtitle_link( date, index, subtitle )
 			r << "<a "
 			r << %Q[name="p#{'%02d' % index}" ] if @anchor_name
 			param = "#{date.strftime( '%Y%m%d' )}#p#{'%02d' % index}"
-			titleattr = (not subtitle or subtitle.empty?) ? '' : %Q[ title="#{remove_tag( subtitle ).gsub( /"/, "&quot;" )}"]
+			titleattr = (not subtitle or subtitle.empty?) ? '' : %Q[ title="#{remove_tag( apply_plugin subtitle ).gsub( /"/, "&quot;" )}"]
 			r << %Q[href="#{h @index}#{anchor param}"#{titleattr}>#{@conf.section_anchor}</a> ]
 		end
 
@@ -753,7 +753,6 @@ def brl; '<br clear="left">';  end
 #
 # preferences (saving methods)
 #
-
 if @mode =~ /conf|saveconf/
 	enable_js( '01conf.js' )
 end

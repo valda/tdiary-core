@@ -1,3 +1,83 @@
+2011-11-03 TADA Tadashi <t@tdtds.jp>
+	* plugin/disp_referrer.rb: suppressed Encoding::CompatibilityError error.
+
+2011-11-02 TADA Tadashi <t@tdtds.jp>
+	* plugin/ping.rb: discontinued using Net::HTTP.version_1_1.
+	* plugin/weather.rb: discontinued using Net::HTTP.version_1_1.
+
+2011-10-30  SHIBATA Hiroshi  <shibata.hiroshi@gmail.com>
+
+	* tdiary/dispatcher/index_main.rb: bugfix http header when status is NOT_MODIFIED.
+
+2011-10-29 TADA Tadashi <t@tdtds.jp>
+	* theme/conf.css: fixed invalid element: div.help-icon to span.help.icon.
+	* Release 3.1.1.
+
+2011-10-23  Kazuhiko  <kazuhiko@fdiary.net>
+	* misc/plugin/amazon.rb: support more contries - China, Italy and Spain.
+
+2011-10-18 TADA Tadashi <t@tdtds.jp>
+	* plugin/amazon.rb: supported AssociateTags for each country. #104
+
+2011-10-04  Kazuhiko  <kazuhiko@fdiary.net>
+	* tdiary/config.rb: preload more transcodes that can be used in kw.rb plugin or sending a notification email.
+
+	* misc/plugin/kw.rb: use the default key if the key is missing. use Shift_JIS instead of sjis as the encoding name. load NKF library out of method definitions.
+
+2011-09-26  Kazuhiko  <kazuhiko@fdiary.net>
+	* update.fcgi: initial commit.
+	* index.fcgi, misc/lib/fcgi_patch.rb: monkey patching FCGI::each_cgi so that we can accept both UTF-8 input and Shift_JIS input.
+
+2011-09-14  SHIBATA Hiroshi  <shibata.hiroshi@gmail.com>
+	* tdiary/config.rb: do not encode when string is already utf-8 encoding.
+
+2011-09-13  Kazuhiko  <kazuhiko@fdiary.net>
+	* tdiary/config.rb (to_native): fix a typo that may cause NoMethodError, pointed out by hsbt.
+
+2011-09-12  Kazuhiko  <kazuhiko@fdiary.net>
+	* tdiary/config.rb (to_native): fix a mistake in 631e228 that may cause nil return value.
+
+2011-09-08  Kazuhiko  <kazuhiko@fdiary.net>
+	* tdiary/lang/ja.rb, tdiary/lang/zh.rb: replace invalid or undefined characters in String#encode to avoid exceptions.
+
+2011-09-07  Kazuhiko  <kazuhiko@fdiary.net>
+	* tdiary/config.rb, tdiary/lang/en.rb, tdiary/lang/ja.rb, tdiary/lang/zh.rb: define to_native method in Config class instead of each language file.
+
+	* tdiary/lang/ja.rb (to_native): move 'require' to the top of this file because to_native can be called in $SAFE=4 environment.
+	* tdiary/compatible.rb: mark tainted objects as untrusted too to prevent SecurityError in Ruby 1.9, patch by Kazuhiro NISHIYAMA <zn@mbf.nifty.com>.
+
+2011-09-06  Kazuhiko  <kazuhiko@fdiary.net>
+	* tdiary.rb, update.rb: handle encoding properly in mobile mode.
+	* tdiary/lang/ja.rb (to_native): support ASCII-8BIT and broken UTF-8 input.
+
+2011-09-04 TADA Tadashi <t@tdtds.jp>
+	* plugin/00default.rb: apply plugin for subtitle when generating subtitle elements.
+
+2011-08-28  SHIBATA Hiroshi  <shibata.hiroshi@gmail.com>
+	* tdiary/compatible.rb: remove String#encode, affects json_pure gems.
+
+2011-08-25  SHIBATA Hiroshi  <shibata.hiroshi@gmail.com>
+	* re-bundle json_pure
+	* tdiary/compatible.rb, tdiary/referer_manager.rb, tdiary.rb: check to Encoding class defined.
+
+2011-08-19 TADA Tadashi <t@tdtds.jp>
+	* theme/default: fixed: deleted background image from gustav.
+
+2011-08-17 TADA Tadashi <t@tdtds.jp>
+	* misc/plugin/footnote.rb: initialized variables to fix error on category page. #89
+
+2011-08-09  TADA Tadashi <t@tdtds.jp>
+	* js/01conf.js: reloaded after savng when csrf_protection plugin only. #79
+
+2011-08-05 hb <smallstyle@gmail.com>
+	* misc/plugin/image.rb, js/image.js: upload/delete image in ajax.
+
+2011-08-01 hb <smallstyle@gmail.com>
+	* misc/plugin/image.rb: supported multiple upload.
+
+2011-07-31  TADA Tadashi <t@tdtds.jp>
+	* misc/plugin/my-ex.rb: fixed error when tb-show.rb disabled.
+
 2011-07-29  TADA Tadashi <t@tdtds.jp>
 	* js/00default.js: fixed over escape in makePluginTag().
 	* Release 3.1.0.
@@ -23,6 +103,13 @@
 
 2011-07-05  TADA Tadashi <t@tdtds.jp>
 	* saved preferences in ajax.
+
+2011-07-03  SHIBATA Hiroshi  <shibata.hiroshi@gmail.com>
+	* merge tdiary-request. use Rack like interface when cgi mode.
+
+2011-06-29  MATSUOKA Kohei <kohei@machu.jp>
+	* vendor/json_pure-1.5.3: added json_pure library to use to_json method. #58
+	* tdiary/compatible.rb: added String#encoding to avoid NoMethodError.
 
 2011-06-25  TADA Tadashi <t@tdtds.jp>
 	* plugin/image.rb, js/image.js: using jQuery to insert image tags. #54
